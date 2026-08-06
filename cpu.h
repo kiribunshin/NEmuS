@@ -13,14 +13,14 @@ struct CPU {
     Bus* bus = nullptr;
 
     // Addressing Modes
-    uint16_t IMP();  uint16_t IMM();
+    uint16_t IMP();  uint16_t IMM(); uint16_t ACC();
     uint16_t ZP0();  uint16_t ZPX();
     uint16_t ZPY();  uint16_t REL();
     uint16_t ABS();  uint16_t ABX();
     uint16_t ABY();  uint16_t IND();
     uint16_t IZX();  uint16_t IZY();
 
-    // Opcodes (operations) === return extra cycles needed (0 or 1), same shape as addressing modes
+    // Opcodes (operations) === return whether it needs extra cycles (0 or 1)
     uint8_t LDA(); uint8_t LDX(); uint8_t LDY();
     uint8_t STA(); uint8_t STX(); uint8_t STY();
     uint8_t TAX(); uint8_t TAY(); uint8_t TXA(); uint8_t TYA(); uint8_t TSX(); uint8_t TXS();
