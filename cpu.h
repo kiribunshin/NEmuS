@@ -39,6 +39,7 @@ struct CPU {
 
     uint16_t addr_abs = 0x0000;
     uint8_t  fetched = 0x00;
+    bool useAccumulator = false;
 
     uint8_t read(uint16_t addr);
     void write(uint16_t addr, uint8_t data);
@@ -46,6 +47,8 @@ struct CPU {
     void setFlag(uint8_t flag, bool value);
     bool getFlag(uint8_t flag) const;
     void updateZN(uint8_t value);
+    void compare(uint8_t reg);
+
     uint8_t cycles = 0; // cycles remaining for the currently executing instruction
     void clock(); //execute one instruction
 };

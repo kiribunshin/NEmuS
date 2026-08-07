@@ -35,6 +35,7 @@ constexpr uint8_t FLAG_N = (1 << 7); // negative
 //Addressing modes:
 uint16_t CPU::ACC() {
     fetched = A;
+    useAccumulator = true;
     return 0;
 }
 uint16_t CPU::IMP() {
@@ -89,7 +90,7 @@ uint16_t CPU::IND() {
     uint8_t hi = read(PC++);
     uint16_t ptr = (hi << 8) | lo;
     uint8_t low = read(ptr);
-    uint8_t high = read((ptr & 0xFF00) | ((ptr + 1) & 0x00FF)); //a bit odd and counter-intuitive, but here i'm replicating a real and documented bug in the 6502 == games EXPECT this bug, thus its presence
+    uint8_t high = read((ptr & 0xFF00) | ((ptr + 1) & 0x00FF)); //a bit odd and counter-intuitive, but here I'm replicating a real and documented bug in the 6502 == games EXPECT this bug, thus its presence
     addr_abs = (high << 8) | low;
     return 0;
 }
@@ -116,43 +117,171 @@ uint8_t CPU::LDA() {
     fetch();
     A = fetched;
     updateZN(A);
+    return 1;
+}
+uint8_t CPU::LDX() {
+    fetch();
+    X = fetched;
+    updateZN(X);
+    return 1;
+}
+uint8_t CPU::LDY() {
+    fetch();
+    Y = fetched;
+    updateZN(Y);
+    return 1;
+}
+uint8_t CPU::STA() {
+    write(addr_abs, A);
     return 0;
 }
-
-uint8_t CPU::LDX() { return 0; }
-uint8_t CPU::LDY() { return 0; }
-uint8_t CPU::STA() { return 0; }
-uint8_t CPU::STX() { return 0; }
-uint8_t CPU::STY() { return 0; }
-uint8_t CPU::TAX() { return 0; }
-uint8_t CPU::TAY() { return 0; }
-uint8_t CPU::TXA() { return 0; }
-uint8_t CPU::TYA() { return 0; }
-uint8_t CPU::TSX() { return 0; }
-uint8_t CPU::TXS() { return 0; }
-uint8_t CPU::PHA() { return 0; }
-uint8_t CPU::PHP() { return 0; }
-uint8_t CPU::PLA() { return 0; }
-uint8_t CPU::PLP() { return 0; }
-uint8_t CPU::AND() { return 0; }
-uint8_t CPU::EOR() { return 0; }
-uint8_t CPU::ORA() { return 0; }
-uint8_t CPU::BIT() { return 0; }
-uint8_t CPU::ADC() { return 0; }
-uint8_t CPU::SBC() { return 0; }
-uint8_t CPU::CMP() { return 0; }
-uint8_t CPU::CPX() { return 0; }
-uint8_t CPU::CPY() { return 0; }
-uint8_t CPU::INC() { return 0; }
-uint8_t CPU::INX() { return 0; }
-uint8_t CPU::INY() { return 0; }
-uint8_t CPU::DEC() { return 0; }
-uint8_t CPU::DEX() { return 0; }
-uint8_t CPU::DEY() { return 0; }
+uint8_t CPU::STX() {
+    write(addr_abs, X);
+    return 0;
+}
+uint8_t CPU::STY() {
+    write(addr_abs, Y);
+    return 0;
+}
+uint8_t CPU::TAX() {
+    X = A;
+    updateZN(X);
+    return 0;
+}
+uint8_t CPU::TAY() {
+    Y = A;
+    updateZN(Y);
+    return 0;
+}
+uint8_t CPU::TXA() {
+    A = X;
+    updateZN(A);
+    return 0;
+}
+uint8_t CPU::TYA() {
+    A = Y;
+    updateZN(A);
+    return 0;
+}
+uint8_t CPU::TSX() {
+    X = SP;
+    updateZN(X);
+    return 0;
+}
+uint8_t CPU::TXS() {
+    SP = X;
+    return 0;
+}
+uint8_t CPU::CLC() {
+    setFlag(FLAG_C, false);
+    return 0;
+}
+uint8_t CPU::CLD() {
+    setFlag(FLAG_D, false);
+    return 0;
+}
+uint8_t CPU::CLI() {
+    setFlag(FLAG_I, false);
+    return 0;
+}
+uint8_t CPU::CLV() {
+    setFlag(FLAG_V, false);
+    return 0;
+}
+uint8_t CPU::SEC() {
+    setFlag(FLAG_C, true);
+    return 0;
+}
+uint8_t CPU::SED() {
+    setFlag(FLAG_D, true);
+    return 0;
+}
+uint8_t CPU::SEI() {
+    setFlag(FLAG_I, true);
+    return 0;
+}
+uint8_t CPU::INC() {
+    fetch();
+    uint8_t res = fetched + 1;
+    write(addr_abs, res);
+    updateZN(res);
+    return 0;
+}
+uint8_t CPU::DEC() {
+    fetch();
+    uint8_t res = fetched - 1;
+    write(addr_abs, res);
+    updateZN(res);
+    return 0;
+}
+uint8_t CPU::INX() {
+    X++;
+    updateZN(X);
+    return 0;
+}
+uint8_t CPU::INY() {
+    Y++;
+    updateZN(Y);
+    return 0;
+}
+uint8_t CPU::DEX() {
+    X--;
+    updateZN(X);
+    return 0;
+}
+uint8_t CPU::DEY() {
+    Y--;
+    updateZN(Y);
+    return 0;
+}
+uint8_t CPU::AND() {
+    fetch();
+    A &= fetched;
+    updateZN(A);
+    return 1;
+}
+uint8_t CPU::EOR() {
+    fetch();
+    A ^= fetched;
+    updateZN(A);
+    return 1;
+}
+uint8_t CPU::ORA() {
+    fetch();
+    A |= fetched;
+    updateZN(A);
+    return 1;
+}
+uint8_t CPU::BIT() {
+    fetch();
+    uint8_t test = A & fetched;
+    setFlag(FLAG_Z, test == 0);
+    setFlag(FLAG_N, fetched & FLAG_N);
+    setFlag(FLAG_V, fetched & FLAG_V);
+    return 1;
+}
+uint8_t CPU::CMP() {
+    compare(A);
+    return 1;
+}
+uint8_t CPU::CPX() {
+    compare(X);
+    return 1;
+}
+uint8_t CPU::CPY() {
+    compare(Y);
+    return 1;
+}
 uint8_t CPU::ASL() { return 0; }
 uint8_t CPU::LSR() { return 0; }
 uint8_t CPU::ROL() { return 0; }
 uint8_t CPU::ROR() { return 0; }
+uint8_t CPU::PHA() { return 0; }
+uint8_t CPU::PHP() { return 0; }
+uint8_t CPU::PLA() { return 0; }
+uint8_t CPU::PLP() { return 0; }
+uint8_t CPU::ADC() { return 0; }
+uint8_t CPU::SBC() { return 0; }
 uint8_t CPU::JMP() { return 0; }
 uint8_t CPU::JSR() { return 0; }
 uint8_t CPU::RTS() { return 0; }
@@ -165,13 +294,6 @@ uint8_t CPU::BMI() { return 0; }
 uint8_t CPU::BPL() { return 0; }
 uint8_t CPU::BVC() { return 0; }
 uint8_t CPU::BVS() { return 0; }
-uint8_t CPU::CLC() { return 0; }
-uint8_t CPU::CLD() { return 0; }
-uint8_t CPU::CLI() { return 0; }
-uint8_t CPU::CLV() { return 0; }
-uint8_t CPU::SEC() { return 0; }
-uint8_t CPU::SED() { return 0; }
-uint8_t CPU::SEI() { return 0; }
 uint8_t CPU::BRK() { return 0; }
 uint8_t CPU::NOP() { return 0; }
 uint8_t CPU::XXX() { return 0; }
@@ -206,6 +328,14 @@ void CPU::updateZN(uint8_t value) {
     setFlag(FLAG_N, (value & FLAG_N) == FLAG_N);
 }
 
+void CPU::compare(uint8_t reg) {
+    fetch();
+    uint8_t res = reg - fetched;
+    setFlag(FLAG_C, reg >= fetched);
+    setFlag(FLAG_Z, reg == fetched);
+    setFlag(FLAG_N, res & FLAG_N);
+}
+
 void CPU::clock() {
     if (cycles == 0) {
         uint8_t opcode = read(PC++);
@@ -213,6 +343,7 @@ void CPU::clock() {
 
         cycles = instr.cycles;
 
+        useAccumulator = false;
         uint8_t extra1 = (this->*instr.addrmode)();
         uint8_t extra2 = (this->*instr.operate)();
 
