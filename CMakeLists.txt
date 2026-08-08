@@ -7,4 +7,6 @@ add_executable(NES_Emulator main.cpp
         cpu.h
         cpu.cpp
         bus.cpp
-        bus.h)
+        bus.h
+        cartridge.cpp
+        cartridge.h)

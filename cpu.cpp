@@ -429,6 +429,8 @@ uint8_t CPU::PLA() {
 uint8_t CPU::PLP() {
     SP++;
     P = read(0x0100 | SP);
+    P &= ~FLAG_B;
+    P |= FLAG_U;
     return 0;
 }
 uint8_t CPU::JMP() {
@@ -585,8 +587,14 @@ void CPU::nmi() {
     cycles = 8;
 }
 
+void CPU::trace() {
+    printf("%04X  A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%llu\n",
+           PC, A, X, Y, P, SP, totalCycles);
+}
+
 void CPU::clock() {
     if (cycles == 0) {
+        trace();  // logs current PC/registers, before this instruction consumes anything
         opcode = read(PC++);
         const Instruction& instr = lookup[opcode];
 
@@ -600,4 +608,5 @@ void CPU::clock() {
     }
 
     cycles--;
+    totalCycles++;
 }

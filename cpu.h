@@ -40,6 +40,8 @@ struct CPU {
     uint16_t addr_abs = 0x0000;
     uint8_t  fetched = 0x00;
     uint8_t opcode = 0x00;
+    uint8_t cycles = 0; // cycles remaining for the currently executing instruction
+    uint64_t totalCycles = 0; //total cycles for logging purposes
     bool useAccumulator = false;
 
     uint8_t read(uint16_t addr);
@@ -52,8 +54,7 @@ struct CPU {
     void reset();
     void irq();
     void nmi();
-
-    uint8_t cycles = 0; // cycles remaining for the currently executing instruction
+    void trace();
     void clock(); //execute one instruction
 };
 

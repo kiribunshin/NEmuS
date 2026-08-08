@@ -1,22 +1,32 @@
 #include <cstdio>
-
+#include "cartridge.h"
 #include "cpu.h"
 
 int main() {
+    Cartridge cart;
+    if (!cart.loadFromFile("nestest.nes")) {
+        printf("Failed to load nestest.nes\n");
+        return 1;
+    }
+    freopen("test.log", "w", stdout);
+
     CPU cpu;
     Bus bus;
     cpu.bus = &bus;
 
-    //test program
-    bus.ram[0x0000] = 0xA9; //LDA IMM
-    bus.ram[0x0001] = 0x42; //Byte to load
+    bus.prgROM = cart.prgROM;
 
-    cpu.PC = 0x0000;
-    do { cpu.clock(); } while (cpu.cycles > 0);
+    cpu.reset();
+    cpu.PC = 0xC000; // nestest automation entry point
 
-    printf("A = 0x%02X\n", cpu.A);
-    printf("Z Flag = %d\n", cpu.getFlag(0x02));
-    printf("N Flag = %d\n", cpu.getFlag(0x80));
+    // burn off reset()'s initial cycle count before real execution begins
+    while (cpu.cycles > 0) cpu.clock();
+
+    cpu.totalCycles = 7; // nestest's logging convention starts at 7, set AFTER the burn-off
+
+    for (int i = 0; i < 10000; i++) {
+        do { cpu.clock(); } while (cpu.cycles > 0);
+    }
 
     return 0;
 }
