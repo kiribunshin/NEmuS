@@ -36,6 +36,13 @@ struct CPU {
     uint8_t SEC(); uint8_t SED(); uint8_t SEI();
     uint8_t BRK(); uint8_t NOP();
     uint8_t XXX(); // illegal/unimplemented opcode catch-all
+    // Illegal/undocumented opcodes
+    uint8_t LAX(); uint8_t SAX();
+    uint8_t DCP(); uint8_t ISC();
+    uint8_t SLO(); uint8_t RLA();
+    uint8_t SRE(); uint8_t RRA();
+    uint8_t ANC(); uint8_t ALR();
+    uint8_t ARR(); uint8_t SBX();
 
     uint16_t addr_abs = 0x0000;
     uint8_t  fetched = 0x00;
