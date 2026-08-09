@@ -9,4 +9,8 @@ add_executable(NES_Emulator main.cpp
         bus.cpp
         bus.h
         cartridge.cpp
-        cartridge.h)
+        cartridge.h
+        ppu.cpp
+        ppu.h
+        system.cpp
+        system.h)

@@ -705,7 +705,7 @@ void CPU::trace() {
 
 void CPU::clock() {
     if (cycles == 0) {
-        trace();  // logs current PC/registers, before this instruction consumes anything
+        // trace();  // logs current PC/registers, before this instruction consumes anything
         opcode = read(PC++);
         const Instruction& instr = lookup[opcode];
 
