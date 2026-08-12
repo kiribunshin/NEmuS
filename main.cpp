@@ -9,7 +9,7 @@ int main() {
         printf("Failed to load ROM\n");
         return -1;
     }
-    nes.bus.prgROM = cart.prgROM;
+    nes.bus.cartridge = &cart;
 
     nes.reset();
 

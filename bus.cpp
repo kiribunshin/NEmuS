@@ -12,9 +12,7 @@ uint8_t Bus::read(uint16_t addr, bool bReadOnly) {
         return ram[addr & 0x07FF];
     }
     else if (addr <= 0x3FFF) {
-        // PPU registers, mirrored every 8 bytes
-        // return ppu->readRegister(addr & 0x0007);
-        return 0;
+        return ppu->readRegister(addr & 0x0007, bReadOnly);
     }
     else if (addr <= 0x4017) {
         // APU + I/O registers
@@ -33,8 +31,7 @@ uint8_t Bus::read(uint16_t addr, bool bReadOnly) {
         return 0;
     }
     else {
-        uint16_t offset = addr - 0x8000;
-        return prgROM[offset & (prgROM.size() - 1)];
+        return cartridge->cpuRead(addr);
     }
 }
 
@@ -43,8 +40,7 @@ void Bus::write(uint16_t addr, uint8_t value) {
         ram[addr & 0x07FF] = value;
     }
     else if (addr <= 0x3FFF) {
-        // PPU registers
-        // ppu->writeRegister(addr & 0x0007, value);
+        ppu->writeRegister(addr & 0x0007, value);
     }
     else if (addr <= 0x4017) {
         // APU + I/O registers

@@ -1,3 +1,4 @@
+#pragma once
 #include "bus.h"
 #include "cpu.h"
 #include "ppu.h"
@@ -10,6 +11,7 @@ public:
 
     System(){
         cpu.bus = &bus;
+        bus.ppu = &ppu;
     }
 
     void clock();

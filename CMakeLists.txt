@@ -13,4 +13,6 @@ add_executable(NES_Emulator main.cpp
         ppu.cpp
         ppu.h
         system.cpp
-        system.h)
+        system.h
+        mapper0.cpp
+        mapper0.h)

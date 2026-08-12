@@ -1,4 +1,5 @@
 #include "cartridge.h"
+#include "mapper0.h"
 #include <fstream>
 #include <cstdio>
 
@@ -46,6 +47,9 @@ bool Cartridge::loadFromFile(const std::string& path) {
         file.seekg(512, std::ios::cur);
     }
 
+    //vertical mirroring
+    verticalMirroring = header[6] & 0x01;
+
     // Read PRG-ROM
     prgROM.resize(prgSizeUnits * 16384);
     file.read(reinterpret_cast<char*>(prgROM.data()), prgROM.size());
@@ -62,5 +66,17 @@ bool Cartridge::loadFromFile(const std::string& path) {
         return false;
     }
 
+    mapper = std::make_unique<mapper0>(prgSizeUnits, chrSizeUnits);
+
     return true;
+}
+
+uint8_t Cartridge::cpuRead(uint16_t addr) {
+    uint32_t mapped = mapper->cpuMapRead(addr);
+    return prgROM[mapped];
+}
+
+uint8_t Cartridge::ppuRead(uint16_t addr) {
+    uint32_t mapped = mapper->ppuMapRead(addr);
+    return chrROM[mapped];
 }
